@@ -24,6 +24,46 @@ unless config_env() == :test do
     |> String.to_integer()
   end
 
+  db_ssl_opts = fn ->
+    uri = System.fetch_env!("DATABASE_URL") |> URI.parse()
+    query = URI.decode_query(uri.query)
+
+    ssl? = Map.get(query, "sslmode") == "require"
+
+    if ssl? do
+      [
+        host: uri.host,
+        ssl: true,
+        ssl_opts: [
+          cacertfile: CAStore.file_path() |> String.to_charlist(),
+          server_name_indication: uri.host |> String.to_charlist(),
+          customize_hostname_check: [
+            # Our hosting provider uses a wildcard certificate. By default, Erlang does
+            # not support wildcard certificates. This function supports validating
+            # wildcard hosts.
+            # Copied from:
+            # https://community.neon.tech/t/guide-on-connecting-via-ecto/75
+            match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
+          ]
+        ]
+      ]
+    else
+      []
+    end
+  end
+
+  listen_port = System.get_env("PORT", "4000") |> String.to_integer()
+
+  url = fn ->
+    %{
+      scheme: scheme,
+      host: host,
+      port: port
+    } = System.get_env("PHX_URL", "http://localhost") |> URI.parse()
+
+    [scheme: scheme, host: host, port: port]
+  end
+
   allowed_origins = fn ->
     setting = System.get_env("ALLOWED_ORIGIN", "") |> String.split(",", trim: true)
 
@@ -33,15 +73,20 @@ unless config_env() == :test do
     end
   end
 
-  config :formular_server, Formular.Server.Repo,
-    url: System.fetch_env!("FORMULAR_DB_URL"),
-    pool_size: pool_size.()
+  config :formular_server,
+         Formular.Server.Repo,
+         [
+           url: System.fetch_env!("DATABASE_URL"),
+           pool_size: pool_size.()
+         ] ++ db_ssl_opts.()
 
-  web_port = System.get_env("PORT", "4000") |> String.to_integer()
+  endpoint_url = url.()
 
   config :formular_server, Formular.ServerWeb.Endpoint,
     secret_key_base: System.fetch_env!("SECRET_KEY_BASE"),
-    http: [ip: {0, 0, 0, 0}, port: web_port],
+    http: [ip: {0, 0, 0, 0}, port: listen_port],
+    url: endpoint_url,
+    server: true,
     check_origin: allowed_origins.()
 
   config :appsignal, :config, env: System.get_env("APPSIGNAL_APP_ENV", "dev")

@@ -88,7 +88,8 @@ defmodule Formular.Server.MixProject do
       {:ex_machina, "~> 2.7", only: :test},
       {:tablex, "~> 0.3.1-alpha.4", override: true},
       {:tablex_view, github: "elixir-tablex/tablex_view", branch: "feature/editor"},
-      {:tls_certificate_check, "~> 1.20"}
+      {:tls_certificate_check, "~> 1.20"},
+      {:castore, "~> 1.0"}
     ]
   end
 
