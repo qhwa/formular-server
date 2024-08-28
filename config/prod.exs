@@ -10,12 +10,6 @@ import Config
 # which you should run after static files are built and
 # before starting your production server.
 config :formular_server, Formular.ServerWeb.Endpoint,
-  http: [ip: {0, 0, 0, 0}, port: 4000],
-  url: [host: "formula.zubale.com", port: 4000],
-  check_origin: ~w[
-    //*.zubale.com
-    //formular-server.api
-  ],
   server: true,
   cache_static_manifest: "priv/static/cache_manifest.json"
 

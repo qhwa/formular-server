@@ -189,5 +189,4 @@ USER nobody
 COPY --from=mix_release --chown=nobody:nogroup /app /app
 
 WORKDIR /app
-ENTRYPOINT ["/app/bin/formular_server"]
-CMD ["start"]
+CMD ["/app/bin/formular_server", "start"]
