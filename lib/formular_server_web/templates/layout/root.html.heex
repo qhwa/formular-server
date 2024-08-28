@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <%= csrf_meta_tag() %>
+    <.live_title prefix="Formular Server - ">
+      <%= assigns[:page_title] || "Welcome" %>
+    </.live_title>
+    <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn, "/assets/app.css")} />
+
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js">
+    </script>
+    <script
+      defer
+      phx-track-static
+      type="text/javascript"
+      src={Routes.static_path(@conn, "/assets/app.js")}
+    >
+    </script>
+  </head>
+  <body>
+    <header id="header" class="navbar navbar-expand-md d-print-none mb-3">
+      <section class="container-fluid">
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbar-menu"
+          aria-controls="navbar-menu"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
+          <a href="/" class="logo">
+            <img
+              src={Routes.static_path(@conn, "/images/formular-logo.png")}
+              alt="Formular - Easy Configuring"
+              width="70"
+              height="27"
+            />
+          </a>
+        </h1>
+
+        <div class="navbar-nav flex-row order-md-last">
+          <%= render("_user_menu.html", assigns) %>
+        </div>
+      </section>
+    </header>
+    <%= @inner_content %>
+  </body>
+</html>

@@ -1,0 +1,95 @@
+<div class="d-sm-flex align-items-center justify-content-between mb-3">
+  <div class="input-icon col-md-6 mb-3 mb-sm-0">
+    <input
+      type="text"
+      class="form-control"
+      name="name"
+      placeholder="Search..."
+      phx-debounce="500"
+      phx-keyup="search"
+    />
+    <span class="input-icon-addon">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="icon"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        stroke-width="2"
+        stroke="currentColor"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <circle cx="10" cy="10" r="7" />
+        <line x1="21" y1="21" x2="15" y2="15" />
+      </svg>
+    </span>
+  </div>
+
+  <%= if @consumer do %>
+    <div class="mb-3 mb-sm-0">
+      <.link patch={Routes.formula_index_path(@socket, :index)} class="btn">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="icon icon-tabler icon-tabler-x"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+          <path d="M18 6l-12 12"></path>
+          <path d="M6 6l12 12"></path>
+        </svg>
+        🟢 <%= @consumer %>
+      </.link>
+    </div>
+  <% end %>
+
+  <.link
+    href={Routes.formula_new_path(@socket, :new)}
+    class="d-block mb-3 mb-sm-0 d-sm-inline-flex btn btn-primary"
+  >
+    New Formula
+  </.link>
+</div>
+
+<div class="space-y">
+  <%= for formula <- @formulas, consumers = Formulas.online_consumers(formula.name) do %>
+    <%= if @consumer == nil || Enum.member?(consumers, @consumer) do %>
+      <div id={"formula-#{formula.id}"} class="card">
+        <div class="card-body">
+          <h6 class="card-title d-flex justify-content-between">
+            <.link navigate={Routes.formula_show_path(@socket, :show, formula)}>
+              <%= formula.name %>
+            </.link>
+            <p class="text-secondary color-grey-300 mb-0">
+              Updated <%= format_datetime(formula.updated_at) %>
+            </p>
+          </h6>
+
+          <%= unless Enum.empty?(consumers) do %>
+            <p class="text-secondary color-grey-300">
+              Consumed by
+              <%= for consumer <- consumers do %>
+                🟢
+                <.link
+                  patch={Routes.formula_index_path(@socket, :index, consumer: consumer)}
+                  class="color-grey-300"
+                >
+                  <%= consumer %>
+                </.link>
+              <% end %>
+            </p>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

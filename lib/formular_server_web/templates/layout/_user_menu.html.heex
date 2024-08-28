@@ -1,0 +1,20 @@
+<%= if @current_user do %>
+  <nav class="nav-item d-none d-md-flex">
+    <div class="btn-list">
+      <%= link(Formular.ServerWeb.UserSettingsView.display_name(@current_user),
+        to: Routes.user_settings_path(@conn, :edit),
+        class: "btn btn-link"
+      ) %>
+
+      <%= link("Sign out",
+        to: Routes.user_session_path(@conn, :delete),
+        method: :delete,
+        class: "btn btn-outline"
+      ) %>
+    </div>
+  </nav>
+<% else %>
+  <nav class="nav-item d-none d-md-flex">
+    <%= link("Sign in", to: Routes.user_session_path(@conn, :new), class: "btn btn-outline") %>
+  </nav>
+<% end %>

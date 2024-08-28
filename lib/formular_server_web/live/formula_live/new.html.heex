@@ -1,0 +1,63 @@
+<link phx-track-static rel="stylesheet" href={Routes.static_path(@socket, "/assets/editing.css")} />
+
+<.form
+  :let={f}
+  id="formula-form"
+  for={@changeset}
+  phx-change="validate"
+  phx-submit="save"
+  phx-hook="editing"
+>
+  <header>
+    <h1>New formula</h1>
+    <div class="actions">
+      <%= submit("Create",
+        phx_disable_with: "Saving...",
+        class: "btn btn-primary",
+        disabled: not @changeset.valid?
+      ) %>
+      <.link patch={Routes.formula_index_path(@socket, :index)} class="btn">Cancel</.link>
+    </div>
+  </header>
+
+  <div class="mb-3">
+    <%= label(f, :name, class: "form-label") %>
+    <%= text_input(f, :name, class: "form-control") %>
+    <%= error_tag(f, :name) %>
+  </div>
+
+  <div class="mb-3">
+    <div class="form-label">Syntax</div>
+
+    <label class="form-check form-check-inline">
+      <%= radio_button(f, :syntax, "Elixir", class: "form-check-input") %>
+      <span>Elixir</span>
+    </label>
+
+    <label class="form-check form-check-inline">
+      <%= radio_button(f, :syntax, "Decision Table", class: "form-check-input") %>
+      <span>Decision Table</span>
+    </label>
+
+    <%= error_tag(f, :syntax) %>
+  </div>
+
+  <div class="mb-3">
+    <%= label(f, :code) %>
+    <%= textarea(f, :code, id: "raw-code", class: "form-control d-none") %>
+
+    <div id="raw-code-editor-container" phx-update="ignore">
+      <div id="new-rev-editor"></div>
+    </div>
+
+    <%= error_tag(f, :code) %>
+  </div>
+</.form>
+
+<script
+  defer
+  phx-track-static
+  type="text/javascript"
+  src={Routes.static_path(@socket, "/assets/editing.js")}
+>
+</script>

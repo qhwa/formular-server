@@ -1,0 +1,78 @@
+<style>
+  <%= Makeup.stylesheet() %>
+  <%= TablexView.stylesheet() %>
+</style>
+
+<section>
+  <article class="py-3">
+    <h1><%= @formula.name %></h1>
+
+    <%= if @live_action == :show_rev do %>
+      <%= live_modal(Formular.ServerWeb.FormulaLive.RevisionComponent,
+        id: @revision.id,
+        title: @page_title,
+        action: @live_action,
+        revision: @revision,
+        formula: @formula,
+        current_user: @current_user,
+        return_to: Routes.formula_show_path(@socket, :show, @formula)
+      ) %>
+    <% end %>
+
+    <%= if @formula.syntax == "Decision Table" do %>
+      <div class="decision-table">
+        <%= render_decision_table(@formula.code) %>
+      </div>
+    <% else %>
+      <div id="editor">
+        <%= raw(Makeup.highlight(@formula.code)) %>
+      </div>
+    <% end %>
+  </article>
+
+  <footer>
+    <p class="actions">
+      <.link
+        href={Routes.formula_edit_path(@socket, :edit, @formula)}
+        class="btn btn-outline-primary"
+      >
+        Edit
+      </.link>
+      <.link patch={Routes.formula_index_path(@socket, :index)} class="btn btn-link">Back</.link>
+    </p>
+  </footer>
+</section>
+
+<hr />
+
+<section id="revisions">
+  <h3>History</h3>
+  <ul>
+    <%= for rev <- @formula.revisions do %>
+      <% online = rev.id == @formula.current_revision_id %>
+      <li class={if online, do: "online rev", else: "offline rev"}>
+        <.link patch={Routes.formula_show_path(@socket, :show_rev, @formula, rev)}>
+          <%= format_datetime(rev.inserted_at) %>
+        </.link>
+        <%= display_user(rev.user) %>
+      </li>
+    <% end %>
+  </ul>
+</section>
+
+<hr />
+<section id="consumers">
+  <%= if @client_apps == %{} do %>
+    <p>⚪ No consumer online.</p>
+  <% else %>
+    <h4>Online consumers</h4>
+    <ul>
+      <%= for {client_name, count} <- @client_apps do %>
+        <li>
+          🟢 <i><%= client_name || "UNKNOWN" %></i>
+          <span class="color-light">(<%= count %>)</span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>

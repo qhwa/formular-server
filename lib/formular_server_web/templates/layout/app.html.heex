@@ -1,0 +1,11 @@
+<main class="container-fluid">
+  <%= if info_flash = Phoenix.Flash.get(@flash, :info) do %>
+    <p class="alert alert-info" role="alert"><%= inspect(info_flash) %></p>
+  <% end %>
+
+  <%= if error_flash = Phoenix.Flash.get(@flash, :error) do %>
+    <p class="alert alert-danger" role="alert"><%= error_flash %></p>
+  <% end %>
+
+  <%= @inner_content %>
+</main>

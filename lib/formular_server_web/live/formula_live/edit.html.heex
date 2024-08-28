@@ -1,0 +1,190 @@
+<link phx-track-static rel="stylesheet" href="https://jsuites.net/v4/jsuites.css" type="text/css" />
+<link
+  phx-track-static
+  rel="stylesheet"
+  href="https://bossanova.uk/jspreadsheet/v4/jexcel.css"
+  type="text/css"
+/>
+<link phx-track-static rel="stylesheet" href={Routes.static_path(@socket, "/assets/editing.css")} />
+
+<.form
+  :let={f}
+  for={@changeset}
+  id="formula-form"
+  phx-change="validate"
+  phx-submit="save"
+  phx-hook="editing"
+>
+  <header>
+    <h1>Editing Formula: <%= @formula.name %></h1>
+  </header>
+
+  <%= if @live_action == :notify_new_rev do %>
+    <div
+      class="modal show d-flex justify-content-center align-items-center"
+      style="background-color: rgb(0, 0, 0, 0.2);"
+      tabindex="-1"
+    >
+      <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+          </button>
+          <div class="modal-status bg-success"></div>
+          <div class="modal-body text-center py-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon mb-2 text-green icon-lg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <circle cx="12" cy="12" r="9" />
+              <path d="M9 12l2 2l4 -4" />
+            </svg>
+            <h3>You have created a new revisioin</h3>
+            <div class="text-secondary">Do you want to publish it now?</div>
+          </div>
+          <div class="modal-footer">
+            <div class="w-100">
+              <div class="row">
+                <div class="col">
+                  <a
+                    href="#"
+                    class="btn btn-primary w-100"
+                    phx-click="publish"
+                    data-bs-dismiss="modal"
+                  >
+                    Publish
+                  </a>
+                </div>
+                <div class="col">
+                  <.link patch={Routes.formula_show_path(@socket, :show, @formula)} class="btn">
+                    Go to formula
+                  </.link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="card mb-3">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs">
+        <li class="nav-item">
+          <a href="#tabs-raw-ex1" class="nav-link active" data-bs-toggle="tab">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon icon-tabler icon-tabler-code"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M7 8l-4 4l4 4"></path>
+              <path d="M17 8l4 4l-4 4"></path>
+              <path d="M14 4l-4 16"></path>
+            </svg>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#tabs-spreadsheet-ex1" class="nav-link" data-bs-toggle="tab">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon icon-tabler icon-tabler-table"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z">
+              </path>
+              <path d="M3 10h18"></path>
+              <path d="M10 3v18"></path>
+            </svg>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class="card-body">
+      <div class="tab-content">
+        <div class="tab-pane active show" id="tabs-raw-ex1">
+          <div class="field mb-3">
+            <%= label(f, :code, class: "form-label") %>
+            <%= textarea(f, :code,
+              rows: 10,
+              class: "form-control editor",
+              id: "raw-code",
+              style: "display: none;"
+            ) %>
+
+            <div id="raw-code-editor-container" phx-update="ignore">
+              <div id="new-rev-editor"></div>
+            </div>
+
+            <%= error_tag(f, :code) %>
+          </div>
+        </div>
+        <div class="tab-pane" id="tabs-spreadsheet-ex1">
+          <%= if @formula.syntax == "Decision Table" do %>
+            <div id="tablex-editor-container" phx-update="ignore">
+              <%= render_tablex_editor(@formula) %>
+            </div>
+          <% else %>
+            Spreadsheet editor is only available for Decision Tables.
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%= hidden_input(f, :syntax, value: @formula.syntax) %>
+
+  <p class="field mb-3">
+    <%= label(f, :note, "Revision note (optional)", class: "form-label") %>
+    <%= textarea(f, :note,
+      rows: 3,
+      placeholder: "Describe why you are going to update it.",
+      class: "form-control"
+    ) %>
+    <%= error_tag(f, :note) %>
+  </p>
+
+  <p class="field mb-3 actions">
+    <%= submit("Save", phx_disable_with: "Saving...", class: "btn btn-primary") %>
+    <.link patch={Routes.formula_show_path(@socket, :show, @formula)} class="btn btn-outline">
+      Cancel
+    </.link>
+  </p>
+</.form>
+
+<script defer src="https://bossanova.uk/jspreadsheet/v4/jexcel.js">
+</script>
+<script defer src="https://jsuites.net/v4/jsuites.js">
+</script>
+
+<script
+  defer
+  phx-track-static
+  type="text/javascript"
+  src={Routes.static_path(@socket, "/assets/editing.js")}
+>
+</script>

@@ -1,0 +1,67 @@
+<div>
+  <div class="modal-header">
+    <h5 class="modal-title">
+      Revision <%= @revision.inserted_at %> <%= display_user(@revision.user) %>
+    </h5>
+  </div>
+
+  <div class="modal-body">
+    <%= raw(Makeup.highlight(@revision.code)) %>
+
+    <%= if @revision.id == @formula.current_revision_id do %>
+      <span class="online-rev-text">This is the current version.</span>
+    <% else %>
+      <a class="btn btn-outline-primary" href="#" phx-target={@myself} phx-click="publish">
+        Use this version
+      </a>
+    <% end %>
+
+    <%= if assigns[:editing_note] do %>
+      <h3>Note:</h3>
+
+      <.form
+        :let={f}
+        for={@changeset}
+        id="rev-note-form"
+        phx-target={@myself}
+        phx-change="validate"
+        phx-submit="update_note"
+      >
+        <%= textarea(f, :note, rows: 5) %>
+
+        <p class="field actions">
+          <%= submit("Save", phx_disable_with: "Saving...", class: "button button-primary") %>
+          <a
+            phx-target={@myself}
+            phx-click="cancel"
+            class="button button-grey button-border"
+            href="#"
+          >
+            Cancel
+          </a>
+        </p>
+      </.form>
+    <% else %>
+      <div class="rev-note">
+        <%= if @revision.note do %>
+          <pre><%= @revision.note %></pre>
+          <%= if can?(@current_user, update_note(@revision)) do %>
+            <a
+              href="#"
+              class="button button-border button-grey button-xxs"
+              phx-target={@myself}
+              phx-click="edit_note"
+            >
+              Edit
+            </a>
+          <% end %>
+        <% else %>
+          No note.
+          <%= if can?(@current_user, update_note(@revision)) do %>
+            <a href="#" phx-target={@myself} phx-click="edit_note">Add</a>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>
